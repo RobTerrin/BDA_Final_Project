@@ -1,0 +1,25 @@
+library(rstan)
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
+
+dt_gh <- read.csv(file="C:/R_code/Orbis_Services_cleaned.csv", row.names=1, header=T);
+
+rev <- dt_gh[,1:4]
+asts <- dt_gh[,5:8]
+empl <- dt_gh[,9:12]
+
+asts_n <- asts/empl
+rev_n <- log(rev/empl)
+rev_s <- rev_n$revenue.2014
+
+for(i in 1:dim(rev_n)[1]) rev_s[i] <- sd(rev_n[i,])
+
+setwd("C:/R_code/finalProject")
+
+d_a <- list(J=dim(rev_n)[1], T=dim(rev_n)[2], k=as.matrix(asts_n), y=as.matrix(rev_n), y_s=rev_s);
+
+fit1_gh <- stan("finalProj_v1_sav.stan", data = d_a, iter = 5000, chains = 4)
+
+fit2_gh <- stan("finalProj_v2_sav.stan", data = d_a, iter = 5000, chains = 4)
+
+fit2_A_gh <- stan("finalProj_v2_sav_A.stan", data = d_a, iter = 5000, chains = 4)
